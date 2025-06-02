@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express Server</title>
+</head>
+
+<body>
+    <h1>Welcome to Express Server</h1>
+    <p>Your server is running successfully!</p> <button id="hiButton">hi</button>
+    <div id="message" style="margin-top: 20px; font-size: 18px; color: red; font-weight: bold;"></div>    <script>
+        let currentMessageIndex = 0;
+        let messagesArray = [];
+
+        // Функция для генерации случайного цвета
+        function getRandomColor() {
+            const colors = [
+                '#FF0000', // красный
+                '#00FF00', // зеленый
+                '#0000FF', // синий
+                '#FF8C00', // оранжевый
+                '#8A2BE2', // фиолетовый
+                '#FF1493', // розовый
+                '#00CED1', // бирюзовый
+                '#32CD32', // лаймовый
+                '#DC143C', // малиновый
+                '#4B0082', // индиго
+                '#FF6347', // томатный
+                '#9932CC'  // темно-фиолетовый
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        document.getElementById('hiButton').addEventListener('click', async function () {
+            try {
+                // Загружаем сообщения только при первом клике
+                if (messagesArray.length === 0) {
+                    const response = await fetch('./messages.json');
+                    const messages = await response.json();
+                    messagesArray = Object.values(messages.greetings);
+                }
+
+                const messageElement = document.getElementById('message');
+                
+                // Отображаем текущее сообщение
+                messageElement.textContent = messagesArray[currentMessageIndex];
+                
+                // Устанавливаем случайный цвет
+                messageElement.style.color = getRandomColor();
+
+                // Переходим к следующему сообщению (с возвратом в начало)
+                currentMessageIndex = (currentMessageIndex + 1) % messagesArray.length;
+            } catch (error) {
+                console.error('Ошибка загрузки сообщения:', error);
+                document.getElementById('message').textContent = 'Ошибка загрузки сообщения';
+            }
+        });
+    </script>
+</body>
+
+</html>
