@@ -8,53 +8,52 @@
 </head>
 
 <body>
-    <h1>Welcome to Express Server</h1>
-    <p>Your server is running successfully!</p> <button id="hiButton">hi</button>
-    <div id="message" style="margin-top: 20px; font-size: 18px; color: red; font-weight: bold;"></div>    <script>
+    <h1 id="mainTitle"></h1>
+    <p id="statusText"></p> <button id="hiButton">hi</button>
+    <div style="margin: 20px 0;">
+        <input type="text" id="editBox1" placeholder="Edit box 1" style="margin-right: 8px;">
+        <input type="text" id="editBox2" placeholder="Edit box 2" style="margin-right: 8px;">
+        <input type="text" id="editBox3" placeholder="Edit box 3">
+    </div>
+    <div id="message" style="margin-top: 20px; font-size: 18px; color: red; font-weight: bold;"></div>
+    <script>
         let currentMessageIndex = 0;
         let messagesArray = [];
+        let colorsArray = [];
+        let mainTitle = '';
+        let statusText = '';
 
         // Функция для генерации случайного цвета
         function getRandomColor() {
-            const colors = [
-                '#FF0000', // красный
-                '#00FF00', // зеленый
-                '#0000FF', // синий
-                '#FF8C00', // оранжевый
-                '#8A2BE2', // фиолетовый
-                '#FF1493', // розовый
-                '#00CED1', // бирюзовый
-                '#32CD32', // лаймовый
-                '#DC143C', // малиновый
-                '#4B0082', // индиго
-                '#FF6347', // томатный
-                '#9932CC'  // темно-фиолетовый
-            ];
-            return colors[Math.floor(Math.random() * colors.length)];
+            if (colorsArray.length === 0) return '#000';
+            return colorsArray[Math.floor(Math.random() * colorsArray.length)];
         }
+
+        async function loadResources() {
+            const response = await fetch('./resources.json');
+            const resources = await response.json();
+            messagesArray = Object.values(resources.greetings);
+            colorsArray = resources.colors;
+            mainTitle = resources.mainTitle || '';
+            statusText = resources.statusText || '';
+            document.getElementById('mainTitle').textContent = mainTitle;
+            document.getElementById('statusText').textContent = statusText;
+        }
+
+        loadResources();
 
         document.getElementById('hiButton').addEventListener('click', async function () {
             try {
-                // Загружаем сообщения только при первом клике
-                if (messagesArray.length === 0) {
-                    const response = await fetch('./messages.json');
-                    const messages = await response.json();
-                    messagesArray = Object.values(messages.greetings);
+                if (messagesArray.length === 0 || colorsArray.length === 0) {
+                    await loadResources();
                 }
-
                 const messageElement = document.getElementById('message');
-                
-                // Отображаем текущее сообщение
                 messageElement.textContent = messagesArray[currentMessageIndex];
-                
-                // Устанавливаем случайный цвет
                 messageElement.style.color = getRandomColor();
-
-                // Переходим к следующему сообщению (с возвратом в начало)
                 currentMessageIndex = (currentMessageIndex + 1) % messagesArray.length;
             } catch (error) {
-                console.error('Ошибка загрузки сообщения:', error);
-                document.getElementById('message').textContent = 'Ошибка загрузки сообщения';
+                console.error('Ошибка загрузки ресурса:', error);
+                document.getElementById('message').textContent = 'Ошибка загрузки ресурса';
             }
         });
     </script>
